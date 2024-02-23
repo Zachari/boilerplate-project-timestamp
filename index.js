@@ -31,11 +31,9 @@ const createDateObject = (dateStr) => {
   }
 };
 
-const createResponseObject = (date, isUnix, err) => {
+const createResponseObject = (date, err) => {
   if(err)
     return { error: "Invalid Date" };
-  else if(isUnix)
-    return { unix: date.getTime() * 1000, utc: date.toUTCString() };
   else
     return { unix: date.getTime(), utc: date.toUTCString() };
 };
@@ -48,18 +46,17 @@ app.get("/api/hello", function (req, res) {
 app.get('/api/:date?', (req, res) => {
   let dateStr = req.params.date;
   let err = false;
-  let isUnix = false;
 
-  if(dateStr && !isNaN(dateStr)) {
-    dateStr = dateStr / 1000;
-    isUnix = true;
+  if(dateStr) {
+    if(!isNaN(dateStr))
+      dateStr = parseInt(dateStr);
+    
+    if(!isDateValid(dateStr))
+      err = true;
   }
-
-  if(dateStr && !isDateValid(dateStr))
-    err = true;
   
   let date = createDateObject(dateStr);
-  let respObj = createResponseObject(date, isUnix, err);
+  let respObj = createResponseObject(date, err);
 
   res.json(respObj)
 });
